@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  # Web Server
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8001:80"
+    volumes:
+      - ./src:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - app
+      - pgsql
+
+  # DB
+  pgsql:
+    image: postgres:latest
+    container_name: pgsql
+    volumes:
+      - ./pgsql/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-lara-db}
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "0000"
+
+  # PGAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    ports:
+      - "8005:80"
+    depends_on:
+      - pgsql
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=postgres@root.com
+      - PGADMIN_DEFAULT_PASSWORD=0000
+
+  # Laravel
+  app:
+    container_name: laravel-10
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www
+    ports:
+      - "9000:9000"
+    working_dir: /var/www

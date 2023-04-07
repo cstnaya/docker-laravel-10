@@ -1,0 +1,5 @@
+# ignore volumes generated from docker
+pgsql
+
+src/.env
+
